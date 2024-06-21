@@ -232,7 +232,7 @@ const loadHome = async (req, res) => {
       .populate("brand");
     const brandIds = productData.map((product) => product.brand);
     const brands = await Brand.find({ _id: { $in: brandIds } });
-    const order = await Order.find();
+    const order = await Order.findOne();
     const banner = await Banner.find();
     console.log(banner);
     if(!req.session.user_id){
@@ -272,11 +272,13 @@ const loadProfile = async (req, res) => {
     const userId = req.session.user_id;
     const userData = await User.findById(userId);
     if (userData) {
-      const address = await Address.find();
-      const orders = await Order.find();
+      const address = await Address.findOne({ user: userId })
+      const orders = await Order.findOne({user: userId}).populate('address')
       const wallet = await Wallet.findOne({ user: userId }).populate({
         path: "transaction",
       });
+      console.log("Order", orders.address);
+
       console.log("Wallet:", wallet);
       if (userData) {
         res.render("dashboard", { userData, address, orders, wallet });
